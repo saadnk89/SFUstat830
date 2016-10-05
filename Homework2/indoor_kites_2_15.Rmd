@@ -1,0 +1,69 @@
+---
+title: '2.15'
+author: "The Indoor Kites (Saad Khan, Xiao Zang, Nate Sandholtz, Jacob
+Mortensen)"
+date: "10/4/2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Proof of Probability Integral Transform
+Let $X$ be a random variable with continuous, strictly increasing CDF $F$ and let $Y = F_X(X)$ so that $X = F^{-1}_X(Y)$.
+
+\begin{align*}
+F_Y(y) &= P(Y \le y) \\
+&= P(F_X(X) \le y) \\
+&= P(X \le F^{-1}_X(y)) \\
+&= \int_{-\infty}^{F^{-1}_X(y)} f(x)dx \\
+&= F_X(x)\bigg|_{-\infty}^{F^{-1}_X(y)} \\
+&= F_X(F^{-1}_X(y)) - F_X(-\infty) \\
+&= y - 0
+\end{align*}
+
+Since $F_Y(y)=y$, $\frac{d}{dy} F_Y(y) = f_Y(y) = 1$, the density of a standard uniform distribution. 
+
+Now let $U \sim Unif(0,1)$ and let $X = F^{-1}(U)$. Then 
+\begin{align*}
+F_X(x) &= P(X \le x) \\
+&= P(F^{-1}(U) \le x) \\
+&= P(U \le F(x)) \\
+&= \int_{0}^{F(x)} 1du \\
+&= u \bigg|_0^{F(x)} \\
+&= F(x) - 0\\ 
+&= F(x)
+\end{align*}
+and so we conclude that $X \sim F$. 
+
+A program that converts standard uniform random variables into draws from an Exponential $\beta$ distribution is shown below.
+
+```{r, gen-rvs-function}
+gen_exp <- function(u, beta) {
+  # The quantile function (qexp) is the inverse CDF
+  # We use 1/beta because R uses the rate parameterization for the exponential
+  # while the book uses the scale parameterization.
+  qexp(u, 1/beta)
+}
+
+# Generate 1000 standard uniform draws and convert them
+u <- runif(1000)
+beta <- 4
+exp_draws <- gen_exp(u, beta)
+
+# Draw 1000 random draws from the built-in R function for comparison
+rexp_draws <- rexp(1000, 1/beta)
+
+ggplot(data.frame(exp = exp_draws, rexp = rexp_draws)) +
+  geom_density(aes(x = exp, colour = "Our Func."), alpha = 0.5) +
+  geom_density(aes(x = rexp, colour = "Built In Func."), alpha = 0.5) + 
+  stat_function(aes(x = x, colour = "True Density"), 
+                data = data.frame(x = -1:30), 
+                fun = dexp, args = list(rate = 1/beta)) +
+  ggtitle(bquote("Random Draws from Exponential("~beta~")")) +
+  xlab("X") +
+  ylab("Density") +
+  scale_colour_manual(name = "Guide", values = c("Our Func." = "royalblue2",
+                    "Built In Func." = "firebrick",
+                    "True Density" = "darkgreen")) 
