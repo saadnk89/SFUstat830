@@ -1,0 +1,72 @@
+---
+  output: pdf_document
+---
+# S830 assignment 2 (group portion)
+## Grace G. Hsu, Ran Wang
+
+## CH2 Q15
+
+```{r}
+# @param unif uniform(0, 1) random variables; i.e. vector of samples from the
+#   unif(0, 1) distribution
+# @param b scale parameter for exponential distribution (b = 1/rate); default is
+#   1
+#   
+# @return values from a exponential distribution with scale = b = 1/rate; i.e.
+#   the Exp(b) random variables
+Exp.generator <- function(unif, b = 1) {
+  qexp(p = unif, rate = 1/b)
+}
+
+## testing the generator
+set.seed(830)
+unif.rvs <- runif(n = 1000)
+test <- Exp.generator(unif = unif.rvs)
+
+histtest <- hist(test)
+plot(x = histtest$mids, y = histtest$density, pch = 16)
+points(x = histtest$mids, y = dexp(x = histtest$mids), cex = 0.2, col = "green")  
+# very close to histogram points
+```
+
+## CH3 Q11
+
+```{r}
+## simulate 
+n <- 10000
+num.runs <- 4
+
+set.seed(830)
+runs <- matrix(NA, nrow = n, ncol = num.runs)
+for (j in 1:num.runs) {
+  Yi <- sample(x = c(-1, 1), size = 10000, replace = TRUE)
+  Xi <- cumsum(Yi)
+  runs[,j] <- Xi
+}
+
+## plot all simulations
+cols = c("black", "red", "blue", "green", "brown", "purple", "yellow", "pink")
+for (j in 1:num.runs) {
+  if (j == 1) {
+    plot(x = 1:n, y = runs[,j], pch = 16, cex = 0.5,
+         ylim = c(-105, 105),
+         main = "4 Random walk simulations; p = 1/2",
+         xlab = "n", ylab = "Xn")
+    abline(h = 0)
+    abline(h = sqrt(n))
+    abline(h = -sqrt(n))
+  } else {
+    points(x = 1:n, y = runs[,j], col = cols[j], pch = 16, cex = 0.5)
+  }
+}
+```
+
+* Note that we really just simulated 4 random walks (see CH3 Q4).
+
+* Even though the expectation of Xn is 0, the variance is n = `r n` and hence
+the standard deviation is `r sqrt(n)`.
+
+* Thus, as n increases, we expect each run to deviate more from each other as
+the variance increases; this is sort of reflected in the plot. Note that all
+four still cross zero back and forth as expected.
+
